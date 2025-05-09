@@ -1,0 +1,52 @@
+﻿## Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+*.log
+
+## Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## ASP.NET specific
+appsettings.json
+appsettings.*.json
+
+## Other files
+*.db
+*.sqlite
+*.pdb
+*.mdb
+*.bak
+*.cache
+*.tmp
+*.tmp*
+
+## Rider
+.idea/
+
+## User-specific files
+*.swp
+*.sln.iml
+
+## NuGet
+*.nupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+
+## Environment
+.env
+
+## Test Results
+TestResults/
+*.trx
+
+## Others
+*.DS_Store
+Thumbs.db
