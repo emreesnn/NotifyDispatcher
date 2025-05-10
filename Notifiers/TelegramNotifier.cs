@@ -16,7 +16,7 @@ namespace NotifyDispatcher.Notifiers
         public async Task SendNotificationASync(PriceChangedEvent priceChangedEvent)
         {
             using var client = new HttpClient();
-            var message = $"Fiyat düştü!\nÜrün ID: {priceChangedEvent.ProductId}\n" +
+            var message = $"Fiyat değişti!\nÜrün Adı: {priceChangedEvent.ProductTitle}\n" +
                           $"Eski fiyat: {priceChangedEvent.OldPrice}\nYeni fiyat: {priceChangedEvent.NewPrice}";
 
             var url = $"https://api.telegram.org/bot{_botToken}/sendMessage?chat_id={_chatId}&text={message}";

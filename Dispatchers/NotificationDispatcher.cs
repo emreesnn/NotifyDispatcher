@@ -7,7 +7,6 @@ namespace NotifyDispatcher.Dispatchers
     {
         private readonly TelegramNotifier _telegramNotifier;
 
-        //Telegram notifier çağırılacak
         public NotificationDispatcher(TelegramNotifier telegramNotifier)
         {
             _telegramNotifier = telegramNotifier;

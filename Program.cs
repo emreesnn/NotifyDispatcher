@@ -1,6 +1,10 @@
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using NotifyDispatcher.Data;
+using NotifyDispatcher.Dispatchers;
+using NotifyDispatcher.Jobs;
+using NotifyDispatcher.Notifiers;
 using NotifyDispatcher.ProductWarcherService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +12,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddHttpClient<ProductWatcherService>();
 builder.Services.AddScoped<ProductRepository>();
+builder.Services.AddScoped<IEventDispatcher, EventDispatcher>();
+builder.Services.AddScoped<NotificationDispatcher>();
+builder.Services.AddScoped<TelegramNotifier>();
+builder.Services.AddScoped<ProductCheckJob>();
+
+
+//Hangfire
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection")));
+
+builder.Services.AddHangfireServer();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -33,6 +49,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 
+app.UseHangfireDashboard();
+
 app.MapControllers();
+
+RecurringJob.AddOrUpdate<ProductCheckJob>(
+    "product-checker",
+    job => job.RunAsync(),
+    Cron.Minutely);
 
 app.Run();

@@ -27,7 +27,7 @@ namespace NotifyDispatcher.Data
                     .Where(p => p.ProductUrl == productUrl)
                     .FirstOrDefaultAsync();
         }
-        public async Task<bool> CreateProductASync(Product product) 
+        public async Task<bool> CreateProductAsync(Product product) 
         {
             _context.Products.Add(product);
             await _context.SaveChangesAsync();

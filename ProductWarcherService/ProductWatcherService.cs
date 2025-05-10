@@ -1,5 +1,6 @@
 ﻿using HtmlAgilityPack;
 using NotifyDispatcher.Data;
+using NotifyDispatcher.Dispatchers;
 using NotifyDispatcher.Events;
 using NotifyDispatcher.Models;
 using System.Net.Http;
@@ -11,11 +12,15 @@ namespace NotifyDispatcher.ProductWarcherService
     {
         private readonly HttpClient _httpClient;
         private readonly ProductRepository _productRepository;
+        private readonly IEventDispatcher _eventDispatcher;
 
-        public ProductWatcherService(HttpClient httpClient, ProductRepository productRepository)
+        public ProductWatcherService(HttpClient httpClient, 
+            ProductRepository productRepository,
+            IEventDispatcher eventDispatcher)
         {
             _httpClient = httpClient;
             _productRepository = productRepository;
+            _eventDispatcher = eventDispatcher;
         }
 
         public async Task<Product> GetDataFromUrl(string url)
@@ -25,16 +30,16 @@ namespace NotifyDispatcher.ProductWarcherService
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
             
-
             //Reading New Price
             var priceWhole = doc.DocumentNode.SelectSingleNode("//span[@class='a-price-whole']")?.InnerText?.Trim();
             var priceFraction = doc.DocumentNode.SelectSingleNode("//span[@class='a-price-fraction']")?.InnerText?.Trim();
-            var symbol = doc.DocumentNode.SelectSingleNode("//span[@class='a-price-symbol']")?.InnerText?.Trim();
+
             var newProduct = new Product
             {
-                LastKnownPrice = $"{priceWhole},{priceFraction} {symbol}",
+                LastKnownPrice = $"{priceWhole}{priceFraction}",
             };
-            //Veritabanında bu url varmıydı kontrolü
+
+            //Is there any same product in db check
             Product product = await _productRepository.GetByUrl(url);
             if(product == null) {
                 var productTitle = doc.DocumentNode.SelectSingleNode("//span[@id='productTitle']")?.InnerText?.Trim();
@@ -42,7 +47,8 @@ namespace NotifyDispatcher.ProductWarcherService
                 newProduct.SiteName = "Amazon";
                 newProduct.ProductUrl = url;
 
-                await _productRepository.CreateProductASync(newProduct);
+                await _productRepository.CreateProductAsync(newProduct);
+                product = newProduct;
             }
 
             decimal LastKnownPrice = decimal.Parse(product.LastKnownPrice);
@@ -54,11 +60,14 @@ namespace NotifyDispatcher.ProductWarcherService
                 await _productRepository.UpdateProductPriceAsync(product.Id, newProduct.LastKnownPrice);
                 PriceChangedEvent priceChangedEvent = new PriceChangedEvent
                 {
-                    ProductId = product.Id,
+                    ProductTitle = product.Title,
                     OldPrice = LastKnownPrice,
                     NewPrice = newPrice,
                     ChangedAt = DateTime.Now
                 };
+
+                await _eventDispatcher.DispatchAsync(priceChangedEvent);
+
             }
 
             return product;
