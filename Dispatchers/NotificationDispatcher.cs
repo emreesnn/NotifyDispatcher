@@ -1,6 +1,21 @@
-﻿namespace NotifyDispatcher.Dispatchers
+﻿using NotifyDispatcher.Events;
+using NotifyDispatcher.Notifiers;
+
+namespace NotifyDispatcher.Dispatchers
 {
     public class NotificationDispatcher
     {
+        private readonly TelegramNotifier _telegramNotifier;
+
+        //Telegram notifier çağırılacak
+        public NotificationDispatcher(TelegramNotifier telegramNotifier)
+        {
+            _telegramNotifier = telegramNotifier;
+        }
+
+        public async Task HandleAsync(PriceChangedEvent priceChangedEvent)
+        {
+            await _telegramNotifier.SendNotificationASync(priceChangedEvent);
+        }
     }
 }

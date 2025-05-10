@@ -1,13 +1,20 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using NotifyDispatcher.Data;
 using NotifyDispatcher.ProductWarcherService;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<ProductWatcherService>();
 builder.Services.AddHttpClient<ProductWatcherService>();
+builder.Services.AddScoped<ProductRepository>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//Telegram options
+var telegramConfig = builder.Configuration.GetSection("Telegram");
+string botToken = telegramConfig["BotToken"];
+string chatId = telegramConfig["ChatId"];
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
