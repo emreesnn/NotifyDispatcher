@@ -56,7 +56,7 @@ namespace NotifyDispatcher.ProductWarcherService
             
             if(newPrice != LastKnownPrice)
             {
-                //TODO: priceHistory Oluştur
+                //TODO: Create priceHistory 
                 await _productRepository.UpdateProductPriceAsync(product.Id, newProduct.LastKnownPrice);
                 PriceChangedEvent priceChangedEvent = new PriceChangedEvent
                 {
